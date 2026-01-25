@@ -1,18 +1,18 @@
 'use server';
 
-import {db, auth} from "@/firebase/admin";
-import {cookies} from "next/headers";
+import { db, auth } from "@/firebase/admin";
+import { cookies } from "next/headers";
 
 const ONE_WEEK = 60 * 60 * 24 * 7;
 
-export async function signUp(params: SignUpParams){
-    const {uid, name, email} = params;
+export async function signUp(params: SignUpParams) {
+    const { uid, name, email } = params;
 
     try {
         const userRecord = await db.collection('users').doc(uid).get();
-        if(userRecord.exists) {
-            return{
-                success :false,
+        if (userRecord.exists) {
+            return {
+                success: false,
                 message: 'User already exists. please sign in instead.'
             }
         }
@@ -26,10 +26,10 @@ export async function signUp(params: SignUpParams){
             message: 'Account created successfully.'
         }
 
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error('Error creating a user', e);
 
-        if(e.code === 'auth/email-already-exists'){
+        if (typeof e === 'object' && e !== null && 'code' in e && (e as { code: string }).code === 'auth/email-already-exists') {
             return {
                 success: false,
                 message: 'This email is already in use.'
@@ -43,13 +43,13 @@ export async function signUp(params: SignUpParams){
     }
 }
 
-export async function signIn(params: SignInParams){
-    const {email, idToken} = params;
+export async function signIn(params: SignInParams) {
+    const { email, idToken } = params;
 
     try {
         const userRecord = await auth.getUserByEmail(email);
 
-        if(!userRecord) {
+        if (!userRecord) {
             return {
                 success: false,
                 message: 'User does not exist. Create an account instead.'
@@ -57,7 +57,7 @@ export async function signIn(params: SignInParams){
         }
 
         await setSessionCookie(idToken)
-    } catch (e){
+    } catch (e) {
         console.log(e);
 
         return {
@@ -88,9 +88,9 @@ export async function getCurrentUser(): Promise<User | null> {
 
     const sessionCookie = cookieStore.get('session')?.value;
 
-    if(!sessionCookie) return null;
+    if (!sessionCookie) return null;
 
-    try{
+    try {
         const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
 
         const userRecord = await db.
@@ -98,7 +98,7 @@ export async function getCurrentUser(): Promise<User | null> {
             .doc(decodedClaims.uid)
             .get();
 
-        if(!userRecord.exists) return null;
+        if (!userRecord.exists) return null;
 
         return {
             ...userRecord.data(),
@@ -112,7 +112,7 @@ export async function getCurrentUser(): Promise<User | null> {
     }
 }
 
-export async function isAuthenticated(){
+export async function isAuthenticated() {
     const user = await getCurrentUser();
 
     return !!user;

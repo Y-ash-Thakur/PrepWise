@@ -54,6 +54,8 @@ const AuthForm = ({type} : {type: FormType}) => {
 
                 if(!result?.success) {
                     toast.error(result?.message);
+                    // Rollback: delete the user from Firebase Auth to prevent "orphan" accounts
+                    await userCredentials.user.delete().catch(err => console.error("Failed to cleanup user", err));
                     return;
                 }
 
