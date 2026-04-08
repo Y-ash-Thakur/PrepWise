@@ -35,8 +35,7 @@ const AuthForm = ({type} : {type: FormType}) => {
             password: ""
         },
     })
-
-    // 2. Define a submit handler.
+    
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try {
             if(type === "sign-up") {
