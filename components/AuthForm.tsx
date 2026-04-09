@@ -26,7 +26,6 @@ const authFormSchema = (type: FormType) => {
 const AuthForm = ({type} : {type: FormType}) => {
     const router = useRouter()
     const formSchema = authFormSchema(type);
-    // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
